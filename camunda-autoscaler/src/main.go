@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 type responseJSON struct {
@@ -40,11 +41,22 @@ func getMetric (w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err)
 	}
-	startedProc, err :=getStartedProc("http://192.168.64.2:31700/engine-rest/history/process-instance/count")
+	now := time.Now().UTC()
+	tenSecond := now.Add(-10*time.Second)
+	startedProc, err :=getStartedProc(fmt.Sprintf(
+		"http://localhost:8080/engine-rest/history/process-instance/count?startedAfter=%s",
+		tenSecond.Format("2006-01-02T15:04:05-0700"),
+	))
 	if err != nil {
 		panic(err)
 	}
-	fmt.Fprintf(w, fmt.Sprintf("camunda_processes_started_per_instance{namespace=\"defualt\"}  %d", startedProc/pods))
+	fmt.Fprintf(w, fmt.Sprintf("camunda_processes_started_per_instance %d", startedProc/pods))
+	fmt.Println(fmt.Sprintf("camunda_processes_started_per_instance %d", startedProc/pods))
+}
+
+func getStatus (w http.ResponseWriter, r *http.Request) {
+	fmt.Println("hello word")
+	fmt.Fprintf(w, "I'm alive")
 }
 
 func getStartedProc(url string) (int, error) {
@@ -52,8 +64,7 @@ func getStartedProc(url string) (int, error) {
 	rj := responseJSON{}
 	resp, err := client.Get(url)
 	if err != nil {
-		fmt.Print("ehlo drow")
-		//return 0, err
+		return 0, err
 	}
 	json.NewDecoder(resp.Body).Decode(&rj)
 	defer resp.Body.Close()
@@ -62,7 +73,7 @@ func getStartedProc(url string) (int, error) {
 
 func getPods(namespace string, labelKey, labelValue string) (int, error) {
 
-	cln, err := newClientSet(true)
+	cln, err := newClientSet(false)
 
 	if err != nil {
 		panic(err.Error())
@@ -76,6 +87,7 @@ func getPods(namespace string, labelKey, labelValue string) (int, error) {
 }
 
 func main() {
-	http.HandleFunc("/metric", getMetric)
-	http.ListenAndServe(":80", nil)
+	http.HandleFunc("/metrics", getMetric)
+	http.HandleFunc("/status", getStatus)
+	http.ListenAndServe(":8088", nil)
 }

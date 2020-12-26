@@ -9,10 +9,10 @@ RUN go get k8s.io/client-go/kubernetes
 RUN go get k8s.io/client-go/rest
 RUN go get k8s.io/client-go/tools/clientcmd
 
-RUN env GOOS=linux GOARCH=amd64 go build -o metric-collect
+#RUN env GOOS=linux GOARCH=amd64 go build -o metric-collect
 
-FROM golang:alpine 
+#FROM golang:alpine 
 
-COPY --from=build /src/metric-collect /usr/bin/metric-collect
+#COPY --from=build /src/metric-collect /usr/bin/metric-collect
 
-CMD ["/usr/bin/metric-collect"]
+#CMD ["/usr/bin/metric-collect"]

@@ -1,0 +1,17 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: camunda-deployment
+  labels:
+    release: prmth
+spec:
+  endpoints:
+    - interval: 5s
+      path: /metrics
+      targetPort: 8088
+  namespaceSelector:
+    matchNames:
+      - default
+  selector:
+    matchLabels:
+      camunda: metrics

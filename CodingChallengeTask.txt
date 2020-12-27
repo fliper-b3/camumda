@@ -1,0 +1,60 @@
+SRE Coding Challenge
+
+Automate every process, anywhere! 
+
+In Camunda it's all about automation. The aim of this coding challenge is to write a Kubernetes autoscaler that can scale up and down a Camunda BPM deployment automatically. Camunda BPM is a workflow engine that processes workflow instances. Your autoscaler should scale up and down a deployment by querying the Camunda BPM APIs, based on the amount of processed workflow instances.
+
+In order to complete this challenge you will need to have minikube ((https://github.com/kubernetes/minikube) or kind (https://github.com/kubernetes-sigs/kind) running on your local machine and kubectl installed. Take the time to install and configure it before starting the challenge.
+
+Download the following zip file: camunda-sre-interview-master.zip
+
+Let's start by provisioning all the manifests that are contained in the `k8s_resources` folder. You can do that with kubectl apply -f k8s_resources. While the resources are deploying on minikube or kind (it might take a while), you can continue to read here to better understand the scope of the exercise.
+
+All the resources are deployed in the `default` namespace. You should see three Pods starting:
+ 
+Postgresql - We need a database configured with persistent storage to keep the data of Camunda BPM.
+Camunda BPM - This pod runs a tomcat application server with Camunda BPM. The platform is configured using environment variables to use Postgresql for persistence. Camunda BPM is already configured in a cluster setup, scaling it up/down is supported and will work out of the box.
+Camunda process starter - a custom software that, using the Camunda BPM API, starts process instances with a certain interval. For additional information, please read the README file in the `process_starter` folder.
+
+Take your time to go through the `k8s_resources` folder and understand how the deployments are structured.
+
+You can then run minikube service list to find out the endpoint of camunda-service. By opening this link you will be presented with the default tomcat page. You can then access `/camunda` to open the web interface or /engine-rest for the REST endpoint.
+
+The camunda-process-starter is starting process instances in Camunda BPM. Your task is to make sure that Camunda's deployment is not getting overloaded and, if that's the case, we need to create new replicas so that it can handle the load correctly.
+
+This should be the rule used for autoscaling (in pseudo-code):
+
+processes-started = process instances started in the last 10 seconds
+n-replicas = number of replicas of camunda bpm deployment
+
+processes-started-per-instance = processes-started / n-replicas
+
+if processes-started-per-instance >= 50 & n-replicas < 4:
+	scale up deployment (+1)
+else if processes-started-per-instance <= 20 & n-replicas > 1:
+	scale down deployment (-1)
+else:
+	do nothing
+
+
+What you need to do:
+
+Create a new folder called camunda-autoscaler that will contain all the code
+Write an application, in a language of your choice, that:
+Polls the camunda service every ten seconds and asks how many processes have been started in the past ten seconds. Hint: https://docs.camunda.org/manual/7.14/reference/rest/history/process-instance/get-process-instance-query-count/
+Scales the deployment according to the logic above and prints a log line every time an action is taken
+Write a Dockerfile to containerize your application
+Write the Kubernetes resources necessary to deploy your application in a yaml file
+
+What result you expect:
+
+By modifying the number of processes-started-per-instance of Camunda process starter, your autoscaler should adjust the number of replicas of the Camunda BPM deployment accordingly.
+
+What you need to send us:
+
+The whole camunda-autoscaler folder
+A file called Questions.md where you answer the following questions:
+How long did it take you to solve the exercise? (Please be honest, we evaluate your answer to this question based on your experience.)
+Which additional steps would you take in order to make this code production ready? Why?
+Which step took most of the time? Why?
+

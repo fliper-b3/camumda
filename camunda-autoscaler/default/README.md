@@ -14,6 +14,9 @@ docker push avguston/camunda:stable
 ## Install
 
 ```bash
+cd camunda-sre-interview-master/
+kubectl apply -f k8s_resources
+cd camunda-autoscaler/default
 helm install camunda camunda
 ```
 

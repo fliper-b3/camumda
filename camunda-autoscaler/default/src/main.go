@@ -43,22 +43,25 @@ func updateDeployment(replicasDelta int32, cln *kubernetes.Clientset, namespace,
 
 }
 
-func autoScaleRules(pods, procStarted int) int32 {
-	if procStarted/pods >= 50 && pods < 4 {
+func autoScaleRules(pods, procStarted int, maxPod int) (int32, error) {
+	if pods == 0 {
+		return 1, errors.New("zero pod")
+	}
+	if procStarted/pods >= 50 && pods < maxPod {
 		log.WithFields(log.Fields{
 			"package":  "main",
 			"function": "autoScaleRules",
 		}).Debugf("Increase procStarted: %d pods: %d", procStarted, pods)
-		return 1
+		return 1, nil
 	}
 	if procStarted/pods <= 20 && pods > 1 {
 		log.WithFields(log.Fields{
 			"package":  "main",
 			"function": "autoScaleRules",
 		}).Debugf("Decrease procStarted: %d pods: %d", procStarted, pods)
-		return -1
+		return -1, nil
 	}
-	return 0
+	return 0, nil
 }
 
 func newClientSet(runOutsideCluster bool) (*kubernetes.Clientset, error) {
@@ -99,19 +102,36 @@ func getStartedProc(url string) (int, error) {
 	return 0, errors.New("Respons code error")
 }
 
-func getPods(namespace string, labelKey, labelValue string, cln *kubernetes.Clientset) (int, error) {
+func getPods(namespace string, labelKey, labelValue string, cln *kubernetes.Clientset, maxPod int) (int, error) {
+	var readyPodsCount int
 	listOptions := metav1.ListOptions{LabelSelector: fmt.Sprintf("%s=%s", labelKey, labelValue)}
 	podsList, err := cln.CoreV1().Pods(namespace).List(context.TODO(), listOptions)
 	if err != nil {
 		return 0, err
 	}
-	return len(podsList.Items), nil
+	totalPods := len(podsList.Items)
+
+	if totalPods >= maxPod {
+		log.WithFields(log.Fields{
+			"package":  "main",
+			"function": "getPods",
+		}).Warning("Maximum pods exist")
+		return totalPods, nil
+	}
+
+	for i := 0; i < totalPods; i++ {
+		if *podsList.Items[i].Status.ContainerStatuses[0].Started {
+			readyPodsCount++
+		}
+	}
+
+	return readyPodsCount, nil
 }
 
-func work(cln *kubernetes.Clientset, url, namespace, labelKey, labelValue, deploymentName string) {
+func work(cln *kubernetes.Clientset, url, namespace, labelKey, labelValue, deploymentName string, maxPod int) {
 	now := time.Now().UTC()
 	tenSecond := now.Add(-10 * time.Second)
-	pods, err := getPods(namespace, labelKey, labelValue, cln)
+	pods, err := getPods(namespace, labelKey, labelValue, cln, maxPod)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"package":  "main",
@@ -134,26 +154,30 @@ func work(cln *kubernetes.Clientset, url, namespace, labelKey, labelValue, deplo
 		)
 		return
 	}
-	scale := autoScaleRules(pods, procStrated)
-	err = updateDeployment(scale, cln, namespace, deploymentName)
+	scale, err := autoScaleRules(pods, procStrated, maxPod)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"package":  "main",
 			"function": "work",
-			"error":    err,
-		}).Errorf(
-			"Cannot updated the deployment %s", deploymentName,
-		)
-		return
+		}).Error(err)
 	}
-	if err == nil && scale != 0 {
+	if scale != 0 && err == nil {
 		log.WithFields(log.Fields{
 			"package":  "main",
 			"function": "work",
 		}).Infof(
-			"Updated the deployment %s, procStarted: %d, new pods count: %d, scale: %d",
-			deploymentName, procStrated, scale+int32(pods), scale,
+			"Updated the deployment %s, procStarted: %d, new pods count: %d",
+			deploymentName, procStrated, scale+int32(pods),
 		)
+		err = updateDeployment(scale, cln, namespace, deploymentName)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"package":  "main",
+				"function": "work",
+				"error":    err,
+			}).Errorf("Cannot updated the deployment %s", deploymentName)
+			return
+		}
 	}
 }
 
@@ -164,11 +188,11 @@ func main() {
 	labelKey := "app"
 	labelValue := "camunda"
 	countUrl := "http://camunda-service:8080/engine-rest/history/process-instance/count"
-	//log.SetLevel(log.DebugLevel)
 	log.SetLevel(log.InfoLevel)
 	cln, err := newClientSet(runOutsideCluster)
 	if runOutsideCluster {
-		countUrl = "http://192.168.64.2:31700/engine-rest/history/process-instance/count"
+		log.SetLevel(log.DebugLevel)
+		countUrl = "http://127.0.0.1:57093/engine-rest/history/process-instance/count"
 	}
 	if err != nil {
 		panic(err)
@@ -185,9 +209,10 @@ func main() {
 			labelKey,
 			labelValue,
 			deploymentName,
+			4,
 		)
 		sec := 10 * time.Second
-		log.Debugf("sleeping % sec", sec)
+		log.Debugf("sleeping %d sec", sec)
 		time.Sleep(sec)
 	}
 

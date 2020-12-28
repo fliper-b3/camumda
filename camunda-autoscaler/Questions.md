@@ -2,8 +2,8 @@
 
   `about four days 3-4 hours per day to pass both variants and
   one full day to check and describe all these.
-  When I started I was confident this task about HPA, I pass it and
-  wanted to send, but read task again, I decided you want to see
+  When I started I was confident this task was about HPA, I pass it and
+  wanted to send, but I read the task again and then I decided you want to see
   kind of operator pod and created one more variant`
 
 * Which additional steps would you take in order to make this code production ready? Why?

@@ -1,6 +1,6 @@
 * How long did it take you to solve the exercise? (Please be honest, we evaluate your answer to this question based on your experience.)
 
-  `abount four days 3-4 hours per day to pass both variants and
+  `about four days 3-4 hours per day to pass both variants and
   one full day to check and describe all these.
   When I started I was confident this task about HPA, I pass it and
   wanted to send, but read task again, I decided you want to see

@@ -43,9 +43,13 @@ kubectl delete -f k8s_resources/processStarter.yml
 ## Pros'n'Cons
 
 (+) controls by k8s api-server
+
 (+) k8s native
+
 (+) less custom code
+
 (+) production ready more or less
 
 (-) needs full production ready infrastructure
+
 (-) needs to change camunda deployment or container

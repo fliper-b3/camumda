@@ -19,3 +19,5 @@ Details is finded in `camunda-autoscale/default/README.md`, `camunda-autoscaler/
 [hpa articl was very userfull](https://rtfm.co.ua/kubernetes-horizontalpodautoscaler-obzor-i-primery/#Applicationbased_metrics_scaling)
 
 [minikube docs](https://kubernetes.io/docs/tasks/access-application-cluster/ingress-minikube/)
+
+[custom metrics framework](https://github.com/kubernetes-sigs/custom-metrics-apiserver/blob/master/test-adapter/main.go)

@@ -5,8 +5,8 @@ This is autoscaler based on client-go library and works by helm deployment
 ## Build
 
 ```bash
-cd camunda-autoscaler/default/src
-docker build -t avguston/camunda:stable
+cd camunda-autoscaler/default
+docker build -t avguston/camunda:stable .
 docker push avguston/camunda:stable
 ```
 

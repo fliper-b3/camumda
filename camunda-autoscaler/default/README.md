@@ -6,8 +6,8 @@ This is autoscaler based on client-go library and works by helm deployment
 
 ```bash
 cd camunda-autoscaler/default
-docker build -t avguston/camunda:stable .
-docker push avguston/camunda:stable
+docker build -t <reponame>/camunda:stable .
+docker push <reponame>/camunda:stable
 ```
 
 
@@ -20,12 +20,17 @@ cd camunda-autoscaler/default
 helm install camunda camunda
 ```
 
+## Manage a payload
+
+To increase/decrease payload change in a file `camunda-sre-interview-master/k8s_resources/processStarter.yml`
+value for env variable `N_PROCESS_STARTED` or `QUIET_TIME_S` or both
+
 ## Clean
 
 ```bash
 helm delete camunda
-kubectl delete deployment camunda-deployment
-kubectl delete deployment camunda-process-starter
+cd camunda-sre-interview-master/
+kubectl delete -f k8s_resources/
 ```
 
 ### Pros'n'Cons

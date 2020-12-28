@@ -6,7 +6,7 @@ metadata:
     release: prmth
 spec:
   endpoints:
-    - interval: 5s
+    - interval: 10s
       path: /metrics
       targetPort: 8088
   namespaceSelector:

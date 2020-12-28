@@ -31,9 +31,13 @@ kubectl delete deployment camunda-process-starter
 ### Pros'n'Cons
 
 (+) independence
-+ easy to setup
-+ no additional dependences
 
-- no stabilisation window
-- no monitoring endpoints
-- needs addition RBAC permissions
+(+) easy to setup
+
+(+) no additional dependences
+
+(-) no stabilisation window
+
+(-) no monitoring endpoints
+
+(-) needs addition RBAC permissions

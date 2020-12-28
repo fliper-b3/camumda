@@ -17,3 +17,5 @@ Details is finded in `camunda-autoscale/default/README.md`, `camunda-autoscaler/
 [prometheus-adapter github](https://github.com/helm/charts/tree/master/stable/prometheus-adapter)
 
 [hpa articl was very userfull](https://rtfm.co.ua/kubernetes-horizontalpodautoscaler-obzor-i-primery/#Applicationbased_metrics_scaling)
+
+[minikube docs](https://kubernetes.io/docs/tasks/access-application-cluster/ingress-minikube/)

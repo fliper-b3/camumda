@@ -30,7 +30,7 @@ kubectl delete deployment camunda-process-starter
 
 ### Pros'n'Cons
 
-+ independence 
+(+) independence
 + easy to setup
 + no additional dependences
 
